@@ -17,7 +17,12 @@
 """
 
 import os
+import sys
 import json
+
+# Menambahkan folder 'app' ke PATH python agar bisa mengimpor auth_system
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
+
 from auth_system import (
     register_user,
     login_user,
@@ -26,7 +31,7 @@ from auth_system import (
     DB_FILE,
 )
 
-RESULT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_results.txt")
+RESULT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "test_results.txt")
 DATASET_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dataset_uji.json")
 
 

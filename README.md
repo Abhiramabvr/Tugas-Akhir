@@ -1,21 +1,42 @@
 # Implementasi Hash Password SHA-256 — Kelompok 1
 Studi Kasus: Pengamanan Sistem Pertukaran Dokumen Akademik Universitas ABC
 
-## Isi
-- `auth_system.py` — aplikasi CLI utama (registrasi, login, demo salt, lihat user)
-- `test_suite.py` — pengujian otomatis (16 skenario, 10+ dataset berbeda)
-- `users_db.json` — "database" hasil registrasi (dibuat otomatis saat run)
-- `test_results.txt` — hasil pengujian (dibuat otomatis saat run test_suite.py)
+## Struktur Folder yang Dirapikan
+- **/app**: Berkas aplikasi utama
+  - `auth_system.py` — Logika inti sistem autentikasi
+  - `web_server.py` — Web Server HTTP berbasis Python
+  - `index.html` — Antarmuka pengguna (Web UI)
+  - `users_db.json` — Berkas basis data JSON simulasi pengguna
+- **/tests**: Pengujian otomatis dan analisis keamanan
+  - `test_suite.py` — Pengujian otomatis (16 skenario)
+  - `security_analysis.py` — Script analisis keamanan lanjutan
+  - `dataset_uji.json` — Kumpulan data pengujian
+- **/docs**: Dokumentasi proyek dan laporan
+  - `DOKUMENTASI_TEKNIS.md` — Penjelasan teknis sistem kriptografi
+  - `Laporan_TB_Kriptografi_Kelompok1.docx` — Berkas laporan formal
+  - `test_results.txt` — Log output pengujian otomatis
+  - `security_analysis_results.txt` — Log output analisis keamanan
 
 ## Cara Menjalankan
-```bash
-# Jalankan aplikasi interaktif
-python3 auth_system.py
 
-# Jalankan pengujian otomatis (10+ data uji)
-python3 test_suite.py
+### 1. Menjalankan Aplikasi Web (Web UI)
+```bash
+# Jalankan server web
+python app/web_server.py
 ```
-Tidak butuh library eksternal — hanya modul bawaan Python (`hashlib`, `secrets`, `json`).
+Setelah berjalan, buka browser dan akses: [http://localhost:8000](http://localhost:8000)
+
+### 2. Menjalankan Pengujian Otomatis
+```bash
+# Jalankan unit testing otomatis
+python tests/test_suite.py
+```
+
+### 3. Menjalankan Analisis Keamanan Lanjutan
+```bash
+# Jalankan script analisis performa & ketahanan brute-force
+python tests/security_analysis.py
+```
 
 ## Ringkasan Implementasi
 1. **Hashing**: `hashlib.sha256()` dari library standar Python.
@@ -23,10 +44,3 @@ Tidak butuh library eksternal — hanya modul bawaan Python (`hashlib`, `secrets
 3. **Skema hash**: `SHA256(salt + password)`. Salt disimpan bersama hash di `users_db.json`.
 4. **Login**: password yang dimasukkan di-hash ulang dengan salt tersimpan, lalu dibandingkan dengan hash tersimpan.
 5. **Mode perbandingan**: menunjukkan bahwa password sama tanpa salt selalu hasil hash sama (rawan rainbow table), sedangkan dengan salt hasilnya selalu berbeda tiap registrasi.
-
-## Hasil Pengujian
-16 skenario dijalankan (registrasi 10 user berbeda, duplikat username, login sukses/gagal, username tak terdaftar, perbandingan salt, konsistensi hash) — seluruhnya **PASS (16/16, 100%)**. Detail lengkap ada di `test_results.txt`.
-
-## Catatan Pengembangan Lanjutan (opsional)
-- Bisa diganti ke bcrypt/Argon2 untuk key-stretching (SHA-256 murni tergolong cepat sehingga kurang tahan brute-force skala besar).
-- Bisa tambah rate-limiting percobaan login.

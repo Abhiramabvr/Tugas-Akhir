@@ -16,6 +16,10 @@ import time
 import hashlib
 import statistics
 import os
+import sys
+
+# Menambahkan folder 'app' ke PATH python agar bisa mengimpor auth_system
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app")))
 
 from auth_system import hash_password_sha256, generate_salt
 
@@ -32,7 +36,7 @@ except ImportError:
     ARGON2_AVAILABLE = False
 
 
-RESULT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "security_analysis_results.txt")
+RESULT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "security_analysis_results.txt")
 log_lines = []
 
 
