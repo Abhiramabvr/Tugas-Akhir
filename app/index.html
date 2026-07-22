@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Autentikasi Kriptografi SHA-256</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0c20 0%, #15102a 50%, #060214 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f3f1f9;
+            --text-secondary: #a29db8;
+            --accent-primary: #7c4dff;
+            --accent-secondary: #00e5ff;
+            --accent-gradient: linear-gradient(135deg, #7c4dff 0%, #00e5ff 100%);
+            --accent-glow: 0 0 20px rgba(124, 77, 255, 0.4);
+            --error-color: #ff5252;
+            --success-color: #00e676;
+            --card-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            height: 100%;
+            max-height: 650px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 2;
+        }
+
+        /* Ambient Glow backgrounds */
+        .glow-sphere {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: 1;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .glow-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-primary);
+            top: -100px;
+            left: -100px;
+        }
+
+        .glow-2 {
+            width: 350px;
+            height: 350px;
+            background: var(--accent-secondary);
+            bottom: -50px;
+            right: -50px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.2rem;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+
+        /* Navigation Tab */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.3rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 0.75rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-gradient);
+            color: #0d091e;
+            box-shadow: var(--accent-glow);
+        }
+
+        /* Card/Content Area */
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--card-radius);
+            padding: 1.25rem 1.5rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+            overflow-y: auto;
+        }
+
+        .card.active {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+            border-left: 4px solid var(--accent-secondary);
+            padding-left: 0.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--accent-secondary);
+            box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+        }
+
+        /* Switch Toggle */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--glass-border);
+        }
+
+        .switch-label {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .switch-label .desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.1rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: var(--accent-gradient);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--accent-gradient);
+            color: #0d091e;
+            border: none;
+            padding: 0.9rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--accent-glow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Result Visualizer */
+        .result-box {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 8px;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .result-box.success {
+            display: block;
+            background: rgba(0, 230, 118, 0.05);
+            border: 1px solid rgba(0, 230, 118, 0.2);
+            color: var(--text-primary);
+        }
+
+        .result-box.error {
+            display: block;
+            background: rgba(255, 82, 82, 0.05);
+            border: 1px solid rgba(255, 82, 82, 0.2);
+            color: var(--text-primary);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-title.success-text {
+            color: var(--success-color);
+        }
+
+        .result-title.error-text {
+            color: var(--error-color);
+        }
+
+        .result-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid var(--glass-border);
+            line-height: 1.5;
+        }
+
+        .highlight {
+            color: var(--accent-secondary);
+        }
+
+        /* Table */
+        .table-container {
+            overflow: auto;
+            flex: 1;
+            margin-top: 1rem;
+            min-height: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--glass-border);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(0, 230, 118, 0.15);
+            color: var(--success-color);
+            border: 1px solid rgba(0, 230, 118, 0.2);
+        }
+
+        .badge-danger {
+            background: rgba(255, 82, 82, 0.15);
+            color: var(--error-color);
+            border: 1px solid rgba(255, 82, 82, 0.2);
+        }
+
+        /* Demo Compare visual representation */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .compare-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .compare-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .compare-card h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .mono-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.75rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .compare-note {
+            grid-column: 1 / -1;
+            background: rgba(124, 77, 255, 0.05);
+            border: 1px solid rgba(124, 77, 255, 0.15);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-sphere glow-1"></div>
+    <div class="glow-sphere glow-2"></div>
+
+    <div class="container">
+        <header>
+            <h1>Autentikasi SHA-256</h1>
+            <p>Pengamanan Sistem Pertukaran Dokumen Akademik Universitas (Kelompok 1)</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="switchTab('register')">Registrasi</button>
+            <button class="tab-btn" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" onclick="switchTab('compare')">Demo Salt vs No-Salt</button>
+            <button class="tab-btn" onclick="switchTab('database'); fetchUsers();">Daftar Pengguna</button>
+        </nav>
+
+        <!-- Register Card -->
+        <section id="register" class="card active">
+            <h2>Registrasi Pengguna Baru</h2>
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" placeholder="Masukkan username baru..." required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" placeholder="Masukkan password kuat..." required>
+                </div>
+                
+                <div class="switch-container">
+                    <div class="switch-label">
+                        <span style="font-size: 0.9rem; font-weight: 600;">Gunakan Salt Kriptografis</span>
+                        <span class="desc">Menambahkan salt acak yang unik sebelum proses hashing untuk mencegah serangan Rainbow Table.</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="reg-use-salt" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    Daftar Akun
+                </button>
+            </form>
+
+            <div id="reg-result" class="result-box">
+                <div id="reg-result-title" class="result-title"></div>
+                <pre id="reg-result-content" class="result-content"></pre>
+            </div>
+        </section>
+
+        <!-- Login Card -->
+        <section id="login" class="card">
+            <h2>Login Pengguna</h2>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" placeholder="Username Anda..." required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Password Anda..." required>
+                </div>
+                <button type="submit" class="btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    Masuk ke Sistem
+                </button>
+            </form>
+
+            <div id="login-result" class="result-box">
+                <div id="login-result-title" class="result-title"></div>
+                <pre id="login-result-content" class="result-content"></pre>
+            </div>
+        </section>
+
+        <!-- Compare Demo Card -->
+        <section id="compare" class="card">
+            <h2>Demo Perbandingan Hashing</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.4;">
+                Ketikkan password di bawah ini untuk melihat bagaimana password yang sama menghasilkan representasi hash yang sangat berbeda saat menggunakan salt dinamis.
+            </p>
+            <form id="compare-form" onsubmit="handleCompare(event)">
+                <div class="form-group">
+                    <label for="compare-password">Password Demo</label>
+                    <input type="text" id="compare-password" placeholder="Ketik kata sandi untuk pengujian..." required>
+                </div>
+                <button type="submit" class="btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+                    Hitung & Bandingkan Hash
+                </button>
+            </form>
+
+            <div id="compare-result" style="display: none; margin-top: 1.5rem; animation: slideDown 0.3s ease-out;">
+                <div class="compare-grid">
+                    <div class="compare-card">
+                        <h3>Tanpa Salt <span class="badge badge-danger">Statik</span></h3>
+                        <div style="margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">Input ke Hash: <span style="font-family: monospace; color: #fff;">password</span></div>
+                        <div id="compare-nosalt" class="mono-box"></div>
+                    </div>
+                    <div class="compare-card">
+                        <h3>Dengan Salt (Percobaan 1) <span class="badge badge-success">Dinamis 1</span></h3>
+                        <div style="margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">Salt 1 + Password: <span id="compare-salt1-val" style="font-family: monospace; color: var(--accent-secondary);"></span></div>
+                        <div id="compare-salt1" class="mono-box"></div>
+                    </div>
+                    <div class="compare-card" style="grid-column: 1 / -1;">
+                        <h3>Dengan Salt (Percobaan 2) <span class="badge badge-success">Dinamis 2</span></h3>
+                        <div style="margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">Salt 2 + Password: <span id="compare-salt2-val" style="font-family: monospace; color: var(--accent-secondary);"></span></div>
+                        <div id="compare-salt2" class="mono-box"></div>
+                    </div>
+                    <div id="compare-catatan" class="compare-note"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Database List Card -->
+        <section id="database" class="card">
+            <h2>Database Pengguna Tersimpan</h2>
+            <div class="table-container">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Status Salt</th>
+                            <th>Salt Hex</th>
+                            <th>Hash SHA-256</th>
+                            <th>Dibuat Pada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr>
+                            <td colspan="5" class="empty-state">Memuat data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <!-- Footer Credit -->
+        <footer style="text-align: center; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.8rem; border-top: 1px solid var(--glass-border); padding-top: 0.8rem;">
+            <p>Dikerjakan oleh: <span style="color: var(--accent-secondary); font-weight: 600;">Abhi - Angga - Rizqi</span></p>
+            <p style="margin-top: 0.2rem; font-size: 0.75rem; opacity: 0.8;">Universitas Ahmad Dahlan</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_URL = ''; 
+        let isServerMode = false;
+
+        // Mendeteksi apakah backend server aktif atau menggunakan mode statik/client-side
+        async function checkBackend() {
+            try {
+                const response = await fetch(`${API_URL}/api/users`);
+                if (response.ok) {
+                    isServerMode = true;
+                    console.log("Menggunakan Mode: Backend Server Python");
+                }
+            } catch (err) {
+                isServerMode = false;
+                console.log("Menggunakan Mode: Client-side Statik (Web Crypto API & LocalStorage)");
+            }
+        }
+
+        // Jalankan deteksi saat load halaman
+        window.addEventListener('DOMContentLoaded', async () => {
+            await checkBackend();
+            if (!isServerMode) {
+                // Inisialisasi database demo jika kosong
+                if (!localStorage.getItem('users_db')) {
+                    localStorage.setItem('users_db', JSON.stringify({}));
+                }
+            }
+        });
+
+        // -------------------------------------------------------------
+        // CLIENT-SIDE KRIPTOGRAFI UTILITY (Untuk deployment statik)
+        // -------------------------------------------------------------
+        
+        async function hashSHA256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function generateSalt(length = 16) {
+            const array = new Uint8Array(length);
+            window.crypto.getRandomValues(array);
+            return Array.from(array, b => b.toString(16).padStart(2, '0')).join('').substring(0, length * 2);
+        }
+
+        function getLocalDB() {
+            return JSON.parse(localStorage.getItem('users_db') || '{}');
+        }
+
+        function saveLocalDB(db) {
+            localStorage.setItem('users_db', JSON.stringify(db));
+        }
+
+        // -------------------------------------------------------------
+        // FUNGSI NAVIGASI
+        // -------------------------------------------------------------
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+
+            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.innerText.toLowerCase().includes(tabId === 'compare' ? 'salt' : tabId === 'database' ? 'daftar' : tabId));
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // -------------------------------------------------------------
+        // INTEGRASI FORM
+        // -------------------------------------------------------------
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const use_salt = document.getElementById('reg-use-salt').checked;
+
+            const resBox = document.getElementById('reg-result');
+            const resTitle = document.getElementById('reg-result-title');
+            const resContent = document.getElementById('reg-result-content');
+
+            resBox.className = 'result-box';
+            resBox.style.display = 'none';
+
+            if (isServerMode) {
+                // Mode Server (Python backend)
+                try {
+                    const response = await fetch(`${API_URL}/api/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password, use_salt })
+                    });
+                    const data = await response.json();
+                    showRegisterResult(data);
+                } catch (err) {
+                    showRegisterError();
+                }
+            } else {
+                // Mode Client (Untuk Web Hosting Statik seperti InfinityFree)
+                const db = getLocalDB();
+                if (db[username]) {
+                    showRegisterResult({ status: 'GAGAL', alasan: 'Username sudah terdaftar' });
+                    return;
+                }
+
+                const salt = use_salt ? generateSalt() : '';
+                const hash = await hashSHA256(salt + password);
+
+                db[username] = {
+                    salt: salt,
+                    hash: hash,
+                    use_salt: use_salt,
+                    created_at: new Date().toISOString()
+                };
+                saveLocalDB(db);
+
+                showRegisterResult({
+                    status: 'BERHASIL',
+                    username: username,
+                    salt: use_salt ? salt : '(tidak digunakan)',
+                    hash_password: hash
+                });
+            }
+        }
+
+        function showRegisterResult(data) {
+            const resBox = document.getElementById('reg-result');
+            const resTitle = document.getElementById('reg-result-title');
+            const resContent = document.getElementById('reg-result-content');
+
+            resBox.className = 'result-box ' + (data.status === 'BERHASIL' ? 'success' : 'error');
+            resTitle.className = 'result-title ' + (data.status === 'BERHASIL' ? 'success-text' : 'error-text');
+
+            if (data.status === 'BERHASIL') {
+                resTitle.innerHTML = `
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Registrasi Berhasil! (Mode: ${isServerMode ? 'Server' : 'Lokal/Statik'})
+                `;
+                resContent.innerHTML = `Username       : <span class="highlight">${data.username}</span>\nSalt           : ${data.salt}\nHash SHA-256   : ${data.hash_password}`;
+                document.getElementById('register-form').reset();
+            } else {
+                resTitle.innerHTML = `
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Registrasi Gagal
+                `;
+                resContent.textContent = `Alasan: ${data.alasan}`;
+            }
+        }
+
+        function showRegisterError() {
+            const resBox = document.getElementById('reg-result');
+            const resTitle = document.getElementById('reg-result-title');
+            const resContent = document.getElementById('reg-result-content');
+            resBox.className = 'result-box error';
+            resTitle.className = 'result-title error-text';
+            resTitle.textContent = 'Koneksi Gagal';
+            resContent.textContent = 'Gagal menghubungi server backend.';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            const resBox = document.getElementById('login-result');
+            const resTitle = document.getElementById('login-result-title');
+            const resContent = document.getElementById('login-result-content');
+
+            resBox.className = 'result-box';
+            resBox.style.display = 'none';
+
+            if (isServerMode) {
+                try {
+                    const response = await fetch(`${API_URL}/api/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await response.json();
+                    showLoginResult(data);
+                } catch (err) {
+                    showLoginError();
+                }
+            } else {
+                const db = getLocalDB();
+                if (!db[username]) {
+                    showLoginResult({ status: 'GAGAL', alasan: 'Username tidak ditemukan' });
+                    return;
+                }
+                const record = db[username];
+                const inputHash = await hashSHA256(record.salt + password);
+
+                if (inputHash === record.hash) {
+                    showLoginResult({ status: 'BERHASIL', username: username });
+                } else {
+                    showLoginResult({ status: 'GAGAL', alasan: 'Password salah' });
+                }
+            }
+        }
+
+        function showLoginResult(data) {
+            const resBox = document.getElementById('login-result');
+            const resTitle = document.getElementById('login-result-title');
+            const resContent = document.getElementById('login-result-content');
+
+            resBox.className = 'result-box ' + (data.status === 'BERHASIL' ? 'success' : 'error');
+            resTitle.className = 'result-title ' + (data.status === 'BERHASIL' ? 'success-text' : 'error-text');
+
+            if (data.status === 'BERHASIL') {
+                resTitle.innerHTML = `
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Login Berhasil! (Mode: ${isServerMode ? 'Server' : 'Lokal/Statik'})
+                `;
+                resContent.innerHTML = `Selamat datang kembali, <span class="highlight">${data.username}</span>! Autentikasi dengan pencocokan hash berhasil dilakukan.`;
+                document.getElementById('login-form').reset();
+            } else {
+                resTitle.innerHTML = `
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Login Gagal
+                `;
+                resContent.textContent = `Alasan: ${data.alasan}`;
+            }
+        }
+
+        function showLoginError() {
+            const resBox = document.getElementById('login-result');
+            const resTitle = document.getElementById('login-result-title');
+            const resContent = document.getElementById('login-result-content');
+            resBox.className = 'result-box error';
+            resTitle.className = 'result-title error-text';
+            resTitle.textContent = 'Koneksi Gagal';
+            resContent.textContent = 'Gagal menghubungi server backend.';
+        }
+
+        async function handleCompare(e) {
+            e.preventDefault();
+            const password = document.getElementById('compare-password').value.trim();
+            const resContainer = document.getElementById('compare-result');
+
+            if (isServerMode) {
+                try {
+                    const response = await fetch(`${API_URL}/api/compare`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password })
+                    });
+                    const data = await response.json();
+                    showCompareResult(data);
+                } catch (err) {
+                    alert('Gagal menghubungi server untuk demo.');
+                }
+            } else {
+                const salt1 = generateSalt();
+                const salt2 = generateSalt();
+
+                const hashNoSalt = await hashSHA256(password);
+                const hashSalt1 = await hashSHA256(salt1 + password);
+                const hashSalt2 = await hashSHA256(salt2 + password);
+
+                showCompareResult({
+                    hash_tanpa_salt: hashNoSalt,
+                    "hash_dengan_salt (percobaan 1)": hashSalt1,
+                    "hash_dengan_salt (percobaan 2)": hashSalt2,
+                    catatan: "Tanpa salt, password yang sama SELALU menghasilkan hash yang sama (rentan rainbow table). Dengan salt, setiap registrasi menghasilkan hash BERBEDA walau password identik."
+                });
+            }
+        }
+
+        function showCompareResult(data) {
+            const resContainer = document.getElementById('compare-result');
+            resContainer.style.display = 'block';
+
+            document.getElementById('compare-nosalt').textContent = data["hash_tanpa_salt"];
+            
+            const salt1Key = Object.keys(data).find(k => k.includes('percobaan 1'));
+            const salt2Key = Object.keys(data).find(k => k.includes('percobaan 2'));
+            
+            document.getElementById('compare-salt1').textContent = data[salt1Key];
+            document.getElementById('compare-salt2').textContent = data[salt2Key];
+            
+            document.getElementById('compare-salt1-val').textContent = `[salt 1 + password]`;
+            document.getElementById('compare-salt2-val').textContent = `[salt 2 + password]`;
+            
+            document.getElementById('compare-catatan').innerHTML = `<strong>Keterangan Edukatif:</strong><br>${data.catatan}`;
+        }
+
+        async function fetchUsers() {
+            const tbody = document.getElementById('users-tbody');
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Memuat data...</td></tr>';
+
+            let data = {};
+            if (isServerMode) {
+                try {
+                    const response = await fetch(`${API_URL}/api/users`);
+                    data = await response.json();
+                } catch (err) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color: var(--error-color);">Gagal memuat database pengguna dari server.</td></tr>';
+                    return;
+                }
+            } else {
+                data = getLocalDB();
+            }
+
+            const usernames = Object.keys(data);
+            if (usernames.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Belum ada pengguna terdaftar ${isServerMode ? 'di database server' : 'di local storage'}.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            usernames.forEach(username => {
+                const u = data[username];
+                const tr = document.createElement('tr');
+                
+                const formattedDate = u.created_at ? new Date(u.created_at).toLocaleString('id-ID') : '-';
+                const hasSalt = u.use_salt;
+                
+                tr.innerHTML = `
+                    <td style="font-weight: 600; color: var(--accent-secondary);">${username}</td>
+                    <td>
+                        <span class="badge ${hasSalt ? 'badge-success' : 'badge-danger'}">
+                            ${hasSalt ? 'Dengan Salt' : 'Tanpa Salt'}
+                        </span>
+                    </td>
+                    <td style="font-family: monospace; font-size: 0.8rem;">${u.salt || '<span style="color:var(--text-secondary)">(kosong)</span>'}</td>
+                    <td style="font-family: monospace; font-size: 0.8rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${u.hash}">
+                        ${u.hash}
+                    </td>
+                    <td style="color: var(--text-secondary); font-size: 0.85rem;">${formattedDate}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
