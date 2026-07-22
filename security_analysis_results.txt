@@ -1,0 +1,65 @@
+======================================================================
+LAPORAN ANALISIS KEAMANAN LANJUTAN
+Implementasi Hash Password SHA-256 - Kelompok 1
+======================================================================
+
+======================================================================
+1. ANALISIS WAKTU EKSEKUSI HASHING
+======================================================================
+Jumlah iterasi uji        : 100,000
+Waktu total (tanpa salt)  : 0.0504 detik
+Waktu total (dengan salt) : 0.0505 detik
+Throughput (tanpa salt)   : 1,986,048 hash/detik
+Throughput (dengan salt)  : 1,980,762 hash/detik
+Kesimpulan: Penambahan salt TIDAK menambah beban komputasi secara
+signifikan (hanya operasi penggabungan string), namun secara drastis
+meningkatkan keamanan karena setiap hash menjadi unik per user.
+
+======================================================================
+2. ESTIMASI KETAHANAN TERHADAP SERANGAN BRUTE-FORCE
+======================================================================
+Asumsi kecepatan hashing SHA-256 (single-thread, Python): ~1,986,048 hash/detik
+Catatan: GPU modern dapat mencapai >10 miliar hash SHA-256/detik,
+jauh lebih cepat dari implementasi Python murni di atas.
+
+Skenario Password                            Waktu (Python, single-thread)      Waktu (estimasi GPU)
+--------------------------------------------------------------------------------------------------------------
+PIN 4 digit (angka saja)                     5.04 milidetik                     0.00 milidetik
+Password 6 karakter (lowercase)              2.59 menit                         30.89 milidetik
+Password 8 karakter (alfanumerik)            3 tahun                            6.07 jam
+Password 8 karakter (alfanumerik + simbol)   97 tahun                           7.06 hari
+Password 12 karakter (alfanumerik + simbol)  7.60e+09 tahun                     1,509,133 tahun
+
+Kesimpulan:
+- SHA-256 murni TIDAK cocok untuk hashing password tanpa key-stretching
+  karena kecepatannya yang tinggi justru memudahkan brute-force pada
+  password pendek atau lemah (lihat kolom 'estimasi GPU').
+- Salt TIDAK memperlambat brute-force per password (waktu hash tetap sama),
+  namun salt MENCEGAH serangan precomputed rainbow table dan memaksa
+  penyerang melakukan brute-force ULANG untuk setiap akun (tidak bisa
+  reuse tabel hash yang sama untuk banyak akun sekaligus).
+- Untuk keamanan production-grade, disarankan algoritma dengan
+  key-stretching seperti bcrypt/Argon2 (lihat bagian 3).
+
+======================================================================
+3. PERBANDINGAN SHA-256 (+ SALT) vs BCRYPT vs ARGON2
+======================================================================
+
+SHA-256 + salt   : 0.0011 ms/hash (903,098 hash/detik) -> CEPAT, rentan brute-force skala besar
+bcrypt (cost=12) : 276.2901 ms/hash (3.6 hash/detik) -> LAMBAT by design, tahan brute-force
+Argon2id (default): 151.1073 ms/hash (6.6 hash/detik) -> LAMBAT + boros memori, paling tahan
+
+Tabel Ringkasan Karakteristik:
+Algoritma      Key-stretching    Butuh Memori Besar    Rekomendasi
+-------------------------------------------------------------------------------------
+SHA-256        Tidak             Tidak                 Checksum/integritas data, BUKAN password
+bcrypt         Ya (cost factor)  Kecil (4KB)           Layak untuk hashing password
+Argon2         Ya (time+memory)  Besar (dapat diatur)  Terbaik saat ini (rekomendasi OWASP)
+
+Kesimpulan Akhir:
+SHA-256 dipilih pada tugas ini karena kesederhanaan dan tujuan
+pembelajaran konsep hashing & salting. Untuk implementasi production
+pada sistem akademik yang sesungguhnya, algoritma seperti Argon2id
+atau bcrypt lebih direkomendasikan karena dirancang khusus untuk
+memperlambat serangan brute-force (key-stretching), sesuai rekomendasi
+OWASP Password Storage Cheat Sheet.

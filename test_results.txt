@@ -1,0 +1,108 @@
+======================================================================
+LAPORAN PENGUJIAN SISTEM AUTENTIKASI HASH PASSWORD SHA-256
+======================================================================
+Dataset uji dimuat dari: /home/claude/tb_kripto/dataset_uji.json
+Jumlah data registrasi : 10
+
+[Test 1] Registrasi user 'andi123'
+  Password asli : Password123!
+  Hasil         : BERHASIL
+  Salt          : 0dbb67f7550f0f2a819fe4a71975b54e
+  Hash SHA-256  : a34b2a15edf5879a7b1d6b24f0dd1f1cc0e27aa3ab6af40fc960f77bd54b2a6b
+  Verdict       : PASS
+
+[Test 2] Registrasi user 'siti_rahma'
+  Password asli : S1t1@Aman
+  Hasil         : BERHASIL
+  Salt          : 6f917865e77dde21a9cdbac74cc926e4
+  Hash SHA-256  : 575c025355df8a7258a0afc63b50dd5dc5a9aa31ec419b4ce82a365bbe77af14
+  Verdict       : PASS
+
+[Test 3] Registrasi user 'budi.santoso'
+  Password asli : Bud1Kuat#2024
+  Hasil         : BERHASIL
+  Salt          : 2f1d6ca4d8be6270146b0aa71eb6f355
+  Hash SHA-256  : c110baec336ae143ed01a9e0ea3d9b38d29e1393082cfdcbff4522803089d649
+  Verdict       : PASS
+
+[Test 4] Registrasi user 'dewi_lestari'
+  Password asli : Dew1L3st4ri$
+  Hasil         : BERHASIL
+  Salt          : c6032290edd4296e35189be406baef5d
+  Hash SHA-256  : 3b5f35dde7b2776f39a3195f425875bf8f8e049118ea1be987e3e02526722de4
+  Verdict       : PASS
+
+[Test 5] Registrasi user 'rizky_pratama'
+  Password asli : Rizky_P@ss99
+  Hasil         : BERHASIL
+  Salt          : 1a0aa392ec1233949d1e957ae7cc5d3a
+  Hash SHA-256  : ea03e95f356f30bea95ebde2995f7308bd863e9a8b7ea02a44b27f65fa73f193
+  Verdict       : PASS
+
+[Test 6] Registrasi user 'nadia_putri'
+  Password asli : N4d14Putri!
+  Hasil         : BERHASIL
+  Salt          : 66a81420120248bc5a90a4309afeabb2
+  Hash SHA-256  : ad317e83aff8140af1306b5dbf552bf1a352e3d74679d8aacb29bc88ffe45079
+  Verdict       : PASS
+
+[Test 7] Registrasi user 'fajar.nugraha'
+  Password asli : Faj4r#Nugraha
+  Hasil         : BERHASIL
+  Salt          : c0895c7adb826cd098cebd8747e0d554
+  Hash SHA-256  : ede9b4bfe137ce40aad9a06a425fad20380b533cb59312b58dbd102f6a4ef7db
+  Verdict       : PASS
+
+[Test 8] Registrasi user 'mahasiswa01'
+  Password asli : Kripto2024!
+  Hasil         : BERHASIL
+  Salt          : 37f504f2a8e370a67f8ce4d063229b05
+  Hash SHA-256  : 8c43b18f1d07bafca6e91074acea4d2f7cd8abfbffcb60c61c813b277a2e81ec
+  Verdict       : PASS
+
+[Test 9] Registrasi user 'dosen_pembimbing'
+  Password asli : D0senAman#1
+  Hasil         : BERHASIL
+  Salt          : 154bc32776808ddb9edf2e18a01c3134
+  Hash SHA-256  : 669f53ad802e5a378648e84e7c229e35bf0ecc8a068de3fda51a3c46a07fa28b
+  Verdict       : PASS
+
+[Test 10] Registrasi user 'admin_akademik'
+  Password asli : Adm1n@kademik
+  Hasil         : BERHASIL
+  Salt          : f4c3ef465e7ce92b77bdbbd16e6b9af6
+  Hash SHA-256  : 79a53a5c29d391ac3eab280d4c67049f4b0a6d5f668f6939a92245dd62fa177c
+  Verdict       : PASS
+
+[Test 11] Registrasi duplikat username 'andi123' (harus GAGAL)
+  Hasil   : {'status': 'GAGAL', 'alasan': 'Username sudah terdaftar'}
+  Verdict : PASS
+
+[Test 12] Login 'andi123' dengan password BENAR
+  Hasil   : {'status': 'BERHASIL', 'username': 'andi123'}
+  Verdict : PASS
+
+[Test 13] Login 'siti_rahma' dengan password SALAH
+  Hasil   : {'status': 'GAGAL', 'alasan': 'Password salah'}
+  Verdict : PASS
+
+[Test 14] Login dengan username TIDAK TERDAFTAR
+  Hasil   : {'status': 'GAGAL', 'alasan': 'Username tidak ditemukan'}
+  Verdict : PASS
+
+[Test 15] Perbandingan hash DENGAN vs TANPA salt (password sama: 'PasswordSamaUntukDemo')
+  password                           : PasswordSamaUntukDemo
+  hash_tanpa_salt                    : e8d355234534178441a41c4fe5acf8ff973d27569792ac1042385af26e8f90ef
+  hash_dengan_salt (percobaan 1)     : 7a0085f4c64ece0a9fc0be8c48d8e9e00fd2686a8e7f6282d65172e86ec821b9
+  hash_dengan_salt (percobaan 2)     : 9b8aba52852ddb511320d5d5b85f92b68c1bd8891645282b633d00b131952199
+  catatan                            : Tanpa salt, password yang sama SELALU menghasilkan hash yang sama (rentan rainbow table). Dengan salt, setiap registrasi menghasilkan hash BERBEDA walau password identik.
+  Verdict : PASS - hash berbeda meski password sama
+
+[Test 16] Konsistensi hash (password sama + salt sama -> hash harus sama)
+  Hash 1  : 80c4ffb5ec8ab346db4b8f0f2291bbe5943d7cc7e62e402f9eb88ab795bd2fdd
+  Hash 2  : 80c4ffb5ec8ab346db4b8f0f2291bbe5943d7cc7e62e402f9eb88ab795bd2fdd
+  Verdict : PASS
+
+======================================================================
+RINGKASAN: 16/16 pengujian PASS (100.0%)
+======================================================================

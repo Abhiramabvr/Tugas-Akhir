@@ -1,0 +1,73 @@
+{
+  "deskripsi": "Dataset uji untuk pengujian sistem autentikasi hash password SHA-256 - Kelompok 1",
+  "jumlah_data": 10,
+  "kategori_pengujian": [
+    "registrasi_normal",
+    "username_duplikat",
+    "login_password_benar",
+    "login_password_salah",
+    "login_username_tidak_ada",
+    "perbandingan_salt",
+    "konsistensi_hash"
+  ],
+  "dataset_registrasi": [
+    { "id": 1,  "username": "andi123",          "password": "Password123!",   "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 2,  "username": "siti_rahma",        "password": "S1t1@Aman",      "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 3,  "username": "budi.santoso",      "password": "Bud1Kuat#2024",  "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 4,  "username": "dewi_lestari",      "password": "Dew1L3st4ri$",   "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 5,  "username": "rizky_pratama",     "password": "Rizky_P@ss99",   "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 6,  "username": "nadia_putri",       "password": "N4d14Putri!",    "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 7,  "username": "fajar.nugraha",     "password": "Faj4r#Nugraha",  "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 8,  "username": "mahasiswa01",       "password": "Kripto2024!",    "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 9,  "username": "dosen_pembimbing",  "password": "D0senAman#1",    "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" },
+    { "id": 10, "username": "admin_akademik",    "password": "Adm1n@kademik",  "gunakan_salt": true,  "hasil_diharapkan": "BERHASIL" }
+  ],
+  "dataset_kasus_khusus": [
+    {
+      "id": 11,
+      "jenis": "username_duplikat",
+      "username": "andi123",
+      "password": "PasswordBaru!",
+      "hasil_diharapkan": "GAGAL",
+      "alasan_diharapkan": "Username sudah terdaftar"
+    },
+    {
+      "id": 12,
+      "jenis": "login_password_benar",
+      "username": "andi123",
+      "password": "Password123!",
+      "hasil_diharapkan": "BERHASIL"
+    },
+    {
+      "id": 13,
+      "jenis": "login_password_salah",
+      "username": "siti_rahma",
+      "password": "PasswordSalahBanget",
+      "hasil_diharapkan": "GAGAL",
+      "alasan_diharapkan": "Password salah"
+    },
+    {
+      "id": 14,
+      "jenis": "login_username_tidak_ada",
+      "username": "user_tidak_ada",
+      "password": "sembarang",
+      "hasil_diharapkan": "GAGAL",
+      "alasan_diharapkan": "Username tidak ditemukan"
+    },
+    {
+      "id": 15,
+      "jenis": "perbandingan_salt",
+      "password": "PasswordSamaUntukDemo",
+      "catatan": "Password sama harus menghasilkan hash berbeda pada tiap percobaan karena salt acak",
+      "hasil_diharapkan": "hash_berbeda_setiap_percobaan"
+    },
+    {
+      "id": 16,
+      "jenis": "konsistensi_hash",
+      "password": "PasswordKonsisten",
+      "salt_tetap": "salt_tetap_untuk_test",
+      "catatan": "Password sama + salt sama harus menghasilkan hash yang identik",
+      "hasil_diharapkan": "hash_identik"
+    }
+  ]
+}
